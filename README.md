@@ -1,4 +1,5 @@
-```
+---
+
 # Brightness Control Application
 
 This application allows users to manage system brightness levels through an intuitive graphical interface. It includes features such as multilingual support, configuration management, and system tray integration for easy access and control.
