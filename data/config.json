@@ -1,0 +1,19 @@
+{
+    "Language": "PT",
+    "BrightnessLevels": {
+        "B1": 30,
+        "B2": 40,
+        "B3": 15,
+        "B4": 10
+    },
+    "Schedule": {
+        "MorningStart": 6,
+        "MorningEnd": 11,
+        "AfternoonStart": 11,
+        "AfternoonEnd": 17,
+        "EveningStart": 17,
+        "EveningEnd": 23,
+        "NightStart": 23,
+        "NightEnd": 6
+    }
+}
