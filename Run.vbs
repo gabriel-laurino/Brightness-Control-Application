@@ -8,5 +8,5 @@ pythonCommand = "python """ & scriptDir & "main\main.py"""
 objShell.Run pythonCommand, 0, False
 
 ' Caminho do script PowerShell para ajuste automático de brilho (control/adjust_brightness.ps1)
-psCommand = "powershell -ExecutionPolicy Bypass -File """ & scriptDir & "control\adjust_brightness.ps1"""
+psCommand = "powershell -ExecutionPolicy Bypass -File """ & scriptDir & "controller\adjust_brightness.ps1"""
 objShell.Run psCommand, 0, False
