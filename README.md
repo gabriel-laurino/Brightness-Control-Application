@@ -6,7 +6,9 @@ This application allows users to manage SDR brightness levels on HDR-enabled scr
 
 ## Project Overview
 
-The project is structured following the **MVC (Model-View-Controller)** pattern, ensuring a clear separation of concerns and facilitating maintenance and scalability.
+The project is structured following the **MVC (Model-View-Controller)** pattern, ensuring a clear separation of concerns and facilitating maintenance and scalability;
+
+**The project is in Alpha and is still in the development process, many things could be wrong, especially in the division of class tasks and code organization.**
 
 ### Technologies Used:
 
