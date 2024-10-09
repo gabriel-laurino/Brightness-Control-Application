@@ -1,35 +1,33 @@
-# controllers/settings_controller.py
-
 from views.settings_view import SettingsView
 from tkinter import messagebox
 
 class SettingsController:
     def __init__(self, parent_window, config_manager):
-        # Carregar as configurações e definir language_code antes de criar a View
+        # Load configuration and set language before creating the view
         self.config_manager = config_manager
         self.model = config_manager.config
         self.language_code = self.model.get("Language", "EN")
         self.lang_strings = config_manager.load_language_strings(self.language_code)
         
-        # Agora, instanciar a View com o Controller já configurado
+        # Instantiate the view with the already configured controller
         self.view = SettingsView(parent_window, self)
         self.view.set_controller(self)
 
     def apply_settings(self, schedule, language_code):
         try:
-            # Validação dos dados
+            # Validate the data
             if not self.validate_schedule(schedule):
-                raise ValueError("Os horários definidos se sobrepõem ou estão em ordem inválida.")
+                raise ValueError("The defined times overlap or are in an invalid order.")
 
-            # Atualizar o modelo
+            # Update the model
             self.model["Schedule"] = schedule
             self.model["Language"] = language_code
             self.config_manager.save_config()
 
-            # Atualizar as strings de idioma
+            # Update the language strings
             self.lang_strings = self.config_manager.load_language_strings(language_code)
 
-            # Atualizar a View e fechar a janela de configurações
+            # Update the view and close the settings window
             self.view.close()
 
         except ValueError as e:
@@ -44,7 +42,7 @@ class SettingsController:
             )
 
     def validate_schedule(self, schedule):
-
+        # Validate that the time intervals do not overlap and are correctly ordered
         periods = [
             ("MorningStart", "MorningEnd"),
             ("AfternoonStart", "AfternoonEnd"),
@@ -89,7 +87,7 @@ class SettingsController:
         return True
 
     def convert_to_24_hour(self, hour, ampm):
-
+        # Convert 12-hour format to 24-hour format
         if ampm.upper() == 'AM':
             if hour == 12:
                 return 0
@@ -104,7 +102,7 @@ class SettingsController:
             return hour
 
     def convert_to_12_hour(self, hour_24):
-
+        # Convert 24-hour format to 12-hour format
         if hour_24 == 0:
             return 12, 'AM'
         elif 1 <= hour_24 <= 11:

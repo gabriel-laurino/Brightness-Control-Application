@@ -1,5 +1,3 @@
-# views/brightness_view.py
-
 import tkinter as tk
 from views.view_helper import ViewHelper
 from model.data_model import ConfigManager
@@ -7,15 +5,15 @@ from model.data_model import ConfigManager
 config_manager = ConfigManager()
 
 class BrightnessView:
-    def __init__(self, lang_strings):
-        self.window = tk.Tk()
+    def __init__(self, lang_strings, window):
+        self.window = window
         self.helper = ViewHelper(self.window)
         self.entries = {}
         self.success_label = None
         self.lang_strings = lang_strings
         self.widgets_to_update = {}
 
-        # Configuração da janela
+        # Set up the window
         self.helper.setup_window(width=320, height=300, bg_color="#2E2E2E")
 
     def create_widgets(self, brightness_levels):
@@ -25,7 +23,7 @@ class BrightnessView:
         self.create_buttons()
 
     def create_title(self):
-        # Criar título
+        # Create title label
         self.title_label = self.helper.create_label(
             text=self.lang_strings.get("MSG_04", "Brightness Settings"),
             x=20,
@@ -37,15 +35,15 @@ class BrightnessView:
         self.widgets_to_update['title_label'] = self.title_label
 
     def create_separator(self):
-        # Separador
+        # Create a separator
         self.helper.create_separator(x=20, y=50, width=280, height=2, bg="#444444")
 
     def create_brightness_inputs(self, brightness_levels):
-        # Carregar configurações atuais para obter os horários
+        # Load the current configuration to get time schedules
         config = config_manager.load_config()
         schedule = config.get("Schedule", {})
 
-        # Criação dos campos de brilho com horários definidos pelo usuário
+        # Define brightness periods with time schedules
         periods = [
             {
                 "label_key": "MSG_20",
@@ -85,12 +83,13 @@ class BrightnessView:
             self.create_brightness_input(period, brightness_levels, schedule)
 
     def create_brightness_input(self, period, brightness_levels, schedule):
+        # Set period name and time range
         period_name = self.lang_strings.get(period["label_key"], period["default_name"])
         start_time = schedule.get(period["start_key"], "")
         end_time = schedule.get(period["end_key"], "")
 
         if self.lang_strings.get("Language", "EN") == "EN":
-            # Converter para 12 horas com AM/PM
+            # Convert to 12-hour format with AM/PM
             start_hour_12, start_ampm = self.convert_to_12_hour_format(start_time)
             end_hour_12, end_ampm = self.convert_to_12_hour_format(end_time)
 
@@ -99,9 +98,10 @@ class BrightnessView:
             else:
                 label_text = f"{period_name} ():"
         else:
-            # Manter no formato 24 horas
+            # Keep in 24-hour format
             label_text = f"{period_name} ({start_time}h - {end_time}h):"
 
+        # Create label and input for brightness level
         label_widget = self.helper.create_label(
             text=label_text,
             x=40,
@@ -120,14 +120,14 @@ class BrightnessView:
         self.entries[period["key"]] = entry
 
     def create_buttons(self):
-        # Botão Aplicar
+        # Create Apply button
         self.apply_button = self.helper.create_apply_button(
             text=self.lang_strings.get("MSG_08", "Apply")
         )
         self.apply_button.place(x=100, y=230)
         self.widgets_to_update['apply_button'] = self.apply_button
 
-        # Botão Minimizar
+        # Create Minimize button
         self.minimize_button = self.helper.create_rounded_button(
             text="-",
             width=25,
@@ -139,7 +139,7 @@ class BrightnessView:
         self.minimize_button.place(x=250, y=10)
         self.widgets_to_update['minimize_button'] = self.minimize_button
 
-        # Botão Fechar
+        # Create Close button
         self.close_button = self.helper.create_rounded_button(
             text="X",
             width=25,
@@ -151,7 +151,7 @@ class BrightnessView:
         self.close_button.place(x=285, y=10)
         self.widgets_to_update['close_button'] = self.close_button
 
-        # Botão Configurações
+        # Create Settings button
         self.settings_button = self.helper.create_rounded_button(
             text="⚙",
             width=25,
@@ -164,16 +164,16 @@ class BrightnessView:
         self.widgets_to_update['settings_button'] = self.settings_button
 
     def update_language(self):
-        # Carregar as strings de idioma atualizadas
+        # Load updated language strings
         config = config_manager.load_config()
         self.lang_strings = ConfigManager().load_language_strings(config.get("Language", "EN"))
 
-        # Atualizar o título
+        # Update title label
         self.widgets_to_update['title_label'].config(
             text=self.lang_strings.get("MSG_04", "Brightness Settings")
         )
 
-        # Atualizar labels dos níveis de brilho
+        # Update brightness level labels
         schedule = config.get("Schedule", {})
         periods = [
             {
@@ -212,7 +212,7 @@ class BrightnessView:
             end_time = schedule.get(period["end_key"], "")
 
             if self.lang_strings.get("Language", "EN") == "EN":
-                # Converter para 12 horas com AM/PM
+                # Convert to 12-hour format
                 start_hour_12, start_ampm = self.convert_to_12_hour_format(start_time)
                 end_hour_12, end_ampm = self.convert_to_12_hour_format(end_time)
 
@@ -221,19 +221,19 @@ class BrightnessView:
                 else:
                     label_text = f"{period_name} ():"
             else:
-                # Manter no formato 24 horas
+                # Keep in 24-hour format
                 label_text = f"{period_name} ({start_time}h - {end_time}h):"
 
             self.widgets_to_update[f'label_{period["key"]}'].config(text=label_text)
 
-        # Atualizar texto do botão Aplicar
+        # Update Apply button text
         try:
             self.apply_button.itemconfig(self.apply_button.text_id, text=self.lang_strings.get("MSG_08", "Apply"))
         except AttributeError:
-            # Se apply_button não tiver text_id, use config
             self.apply_button.config(text=self.lang_strings.get("MSG_08", "Apply"))
 
     def show_success_message(self):
+        # Show success message for saving settings
         if self.success_label:
             self.success_label.destroy()
 
@@ -258,6 +258,7 @@ class BrightnessView:
         self.window.mainloop()
 
     def convert_to_12_hour_format(self, hour_24):
+        # Convert 24-hour format to 12-hour format
         if hour_24 is None:
             return "", ""
         

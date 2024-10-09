@@ -1,5 +1,3 @@
-# controllers/brightness_controller.py
-
 import os
 from tkinter import messagebox
 from controller.settings_controller import SettingsController
@@ -7,8 +5,7 @@ from model.data_model import ConfigManager
 from views.brightness_view import BrightnessView
 from services.tray_service import TrayService
 
-
-def start_gui():
+def start_gui(root):
     config_manager = ConfigManager()
     config = config_manager.config
     brightness_levels = config.get("BrightnessLevels", {})
@@ -16,7 +13,7 @@ def start_gui():
 
     lang_strings = config_manager.load_language_strings(language)
 
-    view = BrightnessView(lang_strings)
+    view = BrightnessView(lang_strings, root)  # Passar o root como argumento
     view.create_widgets(brightness_levels)
 
     def apply_settings():
@@ -49,7 +46,6 @@ def start_gui():
             view.window.quit()
             view.window.destroy()
         tray_service.destroy_tray_icon()
-        os._exit(0)
 
     def open_settings():
         settings_controller = SettingsController(view.window, config_manager)

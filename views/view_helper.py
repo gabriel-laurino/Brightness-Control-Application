@@ -1,5 +1,3 @@
-# views/view_helper.py
-
 import tkinter as tk
 import ctypes
 
@@ -14,17 +12,17 @@ class ViewHelper:
         self.window.resizable(False, False)
         self.window.attributes("-topmost", topmost)
 
-        # Posicionar a janela no canto inferior direito da tela
+        # Position the window in the bottom right corner of the screen
         screen_width = self.window.winfo_screenwidth()
         screen_height = self.window.winfo_screenheight()
         x_pos = screen_width - width - 10
         y_pos = screen_height - height - 60
         self.window.geometry(f"{width}x{height}+{x_pos}+{y_pos}")
 
-        # Atualizar a janela para garantir que as dimensões estão corretas
+        # Update the window to ensure dimensions are correct
         self.window.update_idletasks()
 
-        # Aplicar cantos arredondados
+        # Apply rounded corners
         self.apply_rounded_region(radius=corner_radius)
 
     def apply_rounded_region(self, radius=20):
@@ -56,7 +54,7 @@ class ViewHelper:
         btn_canvas.tag_lower(rect_id)
         if command:
             btn_canvas.bind("<Button-1>", lambda event: command())
-        # Armazenar os IDs dos itens no canvas
+        # Store canvas item IDs
         btn_canvas.rect_id = rect_id
         btn_canvas.text_id = text_id
         return btn_canvas
@@ -65,7 +63,7 @@ class ViewHelper:
         button.itemconfig(button.rect_id, fill=color)
 
     def create_apply_button(self, text, command=None):
-        # Botão padrão de aplicar
+        # Default "Apply" button
         return self.create_rounded_button(
             text=text,
             width=120,
@@ -98,7 +96,7 @@ class ViewHelper:
             insertbackground="white",
             highlightbackground="#5A5A5A",
             highlightthickness=1,
-            **kwargs  # Passa os argumentos adicionais para o widget Entry
+            **kwargs  # Pass additional arguments to the Entry widget
         )
         entry.place(x=x, y=y)
         entry.insert(0, initial_value)
