@@ -114,6 +114,8 @@ Alternatively, you can use the `Run.vbs` file to start the application without o
 
 ### Step 2: Adjust Brightness Levels
 
+- **ADVICE**: Please use values ​​between 0 and 100, I forgot to implement a validation to limit the numbers to a maximum of 100 and this can make your screen VERY bright.
+
 - **Main Interface**: Allows adjusting SDR brightness levels for different times of the day (Morning, Afternoon, Evening, Night).
 - **Buttons**:
   - **Apply**: Saves the settings and applies the brightness levels.
