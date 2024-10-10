@@ -1,4 +1,4 @@
-# controller/brightness_controller.py
+# controllers/brightness_controller.py
 
 import logging
 from tkinter import messagebox
@@ -6,6 +6,7 @@ from controller.settings_controller import SettingsController
 from model.data_model import ConfigManager
 from views.brightness_view import BrightnessView
 from services.tray_service import TrayService
+
 
 class BrightnessController:
     def __init__(self, root, powershell_service):
@@ -22,7 +23,7 @@ class BrightnessController:
         self.tray_service = TrayService(
             show_window_callback=self.show_window_from_tray,
             exit_app_callback=self.exit_app_from_tray,
-            lang_strings=self.lang_strings
+            lang_strings=self.lang_strings,
         )
         self.tray_service.create_tray_icon()
 
@@ -32,6 +33,14 @@ class BrightnessController:
         self.view.window.protocol("WM_DELETE_WINDOW", self.exit_app_from_tray)
 
         logging.info("BrightnessController initialized.")
+
+    def update_brightness_view(self):
+        self.config = self.config_manager.load_config()
+        self.schedule = self.config.get("Schedule", {})
+        self.brightness_levels = self.config.get("BrightnessLevels", {})
+        self.view.update_brightness_inputs(self.schedule)
+        self.view.update_language(self.lang_strings, self.schedule)
+        logging.info("Brightness view updated with new schedule and brightness levels.")
 
     def run(self):
         logging.info("Running the main Tkinter loop.")
@@ -47,16 +56,17 @@ class BrightnessController:
             if self.config_manager.save_brightness_settings(new_brightness_levels):
                 self.view.show_success_message()
                 logging.info("Brightness settings saved successfully.")
+                self.update_brightness_view()
             else:
                 messagebox.showerror(
                     self.lang_strings.get("MSG_07", "Error"),
-                    self.lang_strings.get("MSG_11", "Failed to save settings.")
+                    self.lang_strings.get("MSG_11", "Failed to save settings."),
                 )
                 logging.error("Failed to save brightness settings.")
         except ValueError:
             messagebox.showerror(
                 self.lang_strings.get("MSG_07", "Error"),
-                self.lang_strings.get("MSG_06", "All values must be integers!")
+                self.lang_strings.get("MSG_06", "All values must be integers!"),
             )
             logging.error("Invalid values entered for brightness levels.")
 
@@ -82,10 +92,14 @@ class BrightnessController:
         self.root.destroy()
 
     def open_settings(self):
-        settings_controller = SettingsController(self.view.window, self.config_manager)
+        settings_controller = SettingsController(
+            self.view.window, self.config_manager, self
+        )
         self.view.window.wait_window(settings_controller.view.window)
         updated_language = self.config_manager.config.get("Language", "EN")
-        updated_lang_strings = self.config_manager.load_language_strings(updated_language)
+        updated_lang_strings = self.config_manager.load_language_strings(
+            updated_language
+        )
         self.lang_strings = updated_lang_strings
         self.schedule = self.config.get("Schedule", {})
         self.view.update_language(self.lang_strings, self.schedule)
@@ -101,13 +115,13 @@ class BrightnessController:
             return "", ""
 
         if hour == 0:
-            return 12, 'AM'
+            return 12, "AM"
         elif 1 <= hour < 12:
-            return hour, 'AM'
+            return hour, "AM"
         elif hour == 12:
-            return 12, 'PM'
+            return 12, "PM"
         elif 13 <= hour < 24:
-            return hour - 12, 'PM'
+            return hour - 12, "PM"
         else:
             logging.error(f"Hour value out of range for conversion: {hour}")
-            return hour, 'AM'
+            return hour, "AM"

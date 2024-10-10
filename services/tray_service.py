@@ -27,13 +27,13 @@ class TrayService:
         menu = pystray.Menu(
             pystray.MenuItem(
                 self.lang_strings.get("MSG_12", "Open"),
-                lambda icon, item: self.on_menu_item_click('open'),
-                default=True
+                lambda icon, item: self.on_menu_item_click("open"),
+                default=True,
             ),
             pystray.MenuItem(
                 self.lang_strings.get("MSG_13", "Exit"),
-                lambda icon, item: self.on_menu_item_click('exit')
-            )
+                lambda icon, item: self.on_menu_item_click("exit"),
+            ),
         )
 
         self.tray_icon = pystray.Icon(icon_text, image, icon_text, menu=menu)
@@ -67,12 +67,12 @@ class TrayService:
 
     def on_menu_item_click(self, action):
 
-        if action == 'open':
+        if action == "open":
             self.show_window_callback()
             self.hide_tray_icon()
-        elif action == 'exit':
+        elif action == "exit":
             self.exit_app_callback()
-            
+
     def set_tray_icon_visibility(self, visible):
         # Set visibility of the tray icon
         if self.tray_icon:

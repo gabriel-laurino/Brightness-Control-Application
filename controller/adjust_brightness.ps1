@@ -24,10 +24,12 @@ function Load-LanguageStrings {
 
         if ($langData.$language) {
             return $langData.$language
-        } else {
+        }
+        else {
             throw "Language '$language' not supported."
         }
-    } else {
+    }
+    else {
         throw "Language file 'lang.json' not found at path $languageFile."
     }
 }
@@ -38,7 +40,8 @@ function Load-Config {
     if (Test-Path $configPath) {
         $configContent = Get-Content -Raw -Path $configPath | ConvertFrom-Json
         return $configContent
-    } else {
+    }
+    else {
         throw "Configuration file 'config.json' not found at path $configPath."
     }
 }
