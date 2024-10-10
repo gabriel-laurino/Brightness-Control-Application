@@ -102,7 +102,7 @@ To automate brightness changes based on time:
 2. Select either English or Portuguese from the available options.
 3. Changes will be automatically applied to the interface and the tray menu.
 
-### For Devs: 
+## For Devs: 
 
 If you prefer to just clone the repository and not download the Release, the python folder will not be present in your project, so you will need python 3.12 installed and the necessary dependencies.
 
