@@ -1,5 +1,3 @@
-# main/main.py
-
 import logging
 import os
 import sys
@@ -10,6 +8,7 @@ if project_root not in sys.path:
 
 os.chdir(project_root)
 
+# Setup logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -18,20 +17,25 @@ logging.basicConfig(
     ]
 )
 
-# Determine the embedded Python directory
+# Determine if the embedded Python directory exists
 script_dir = os.path.dirname(os.path.abspath(__file__))
 python_dir = os.path.abspath(os.path.join(script_dir, '..', 'python'))
-
-# Path to the DLLs folder
 dll_dir = os.path.join(python_dir, 'DLLs')
 
-# Add the DLLs folder to PATH
-os.environ['PATH'] = dll_dir + os.pathsep + os.environ.get('PATH', '')
-
-sys.path.insert(0, dll_dir)
+# If the embedded Python exists, configure PATH and sys.path
+if os.path.exists(python_dir):
+    logging.info("Using embedded Python.")
+    os.environ['PATH'] = dll_dir + os.pathsep + os.environ.get('PATH', '')
+    sys.path.insert(0, dll_dir)
+else:
+    logging.info("Using system Python.")
 
 # Now import tkinter
-from tkinter import Tk, Label
+try:
+    from tkinter import Tk, Label
+except ImportError as e:
+    logging.error("Tkinter is required but not found. Please install it or use the embedded Python.")
+    sys.exit(1)
 
 from controller.brightness_controller import BrightnessController
 from services.powershell_service import PowerShellService
