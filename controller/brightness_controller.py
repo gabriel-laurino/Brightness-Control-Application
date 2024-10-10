@@ -1,73 +1,113 @@
-import os
+# controller/brightness_controller.py
+
+import logging
 from tkinter import messagebox
 from controller.settings_controller import SettingsController
 from model.data_model import ConfigManager
 from views.brightness_view import BrightnessView
 from services.tray_service import TrayService
 
-def start_gui(root):
-    config_manager = ConfigManager()
-    config = config_manager.config
-    brightness_levels = config.get("BrightnessLevels", {})
-    language = config.get("Language", "EN")
+class BrightnessController:
+    def __init__(self, root, powershell_service):
+        self.root = root
+        self.powershell_service = powershell_service
+        self.config_manager = ConfigManager()
+        self.config = self.config_manager.load_config()
+        self.brightness_levels = self.config.get("BrightnessLevels", {})
+        self.language = self.config.get("Language", "EN")
+        self.lang_strings = self.config_manager.load_language_strings(self.language)
+        self.schedule = self.config.get("Schedule", {})
 
-    lang_strings = config_manager.load_language_strings(language)
+        # Initialize TrayService
+        self.tray_service = TrayService(
+            show_window_callback=self.show_window_from_tray,
+            exit_app_callback=self.exit_app_from_tray,
+            lang_strings=self.lang_strings
+        )
+        self.tray_service.create_tray_icon()
 
-    view = BrightnessView(lang_strings, root)  # Passar o root como argumento
-    view.create_widgets(brightness_levels)
+        # Initialize View
+        self.view = BrightnessView(self.lang_strings, self.root, self)
+        self.view.create_widgets(self.brightness_levels, self.schedule)
+        self.view.window.protocol("WM_DELETE_WINDOW", self.exit_app_from_tray)
 
-    def apply_settings():
+        logging.info("BrightnessController initialized.")
+
+    def run(self):
+        logging.info("Running the main Tkinter loop.")
+        self.view.mainloop()
+
+    def apply_settings(self):
         try:
             new_brightness_levels = {
-                key: int(entry.get()) for key, entry in view.entries.items()
+                key: int(entry.get()) for key, entry in self.view.entries.items()
             }
-            config["BrightnessLevels"] = new_brightness_levels
-            config_manager.save_config()
-            view.show_success_message()
+            self.brightness_levels = new_brightness_levels
+            self.config["BrightnessLevels"] = new_brightness_levels
+            if self.config_manager.save_brightness_settings(new_brightness_levels):
+                self.view.show_success_message()
+                logging.info("Brightness settings saved successfully.")
+            else:
+                messagebox.showerror(
+                    self.lang_strings.get("MSG_07", "Error"),
+                    self.lang_strings.get("MSG_11", "Failed to save settings.")
+                )
+                logging.error("Failed to save brightness settings.")
         except ValueError:
             messagebox.showerror(
-                lang_strings.get("MSG_07", "Error"),
-                lang_strings.get("MSG_06", "All values must be integers!")
+                self.lang_strings.get("MSG_07", "Error"),
+                self.lang_strings.get("MSG_06", "All values must be integers!")
             )
+            logging.error("Invalid values entered for brightness levels.")
 
-    def minimize_to_tray():
-        view.withdraw_window()
-        tray_service.create_tray_icon()
+    def minimize_to_tray(self):
+        logging.info("Minimizing window to tray.")
+        self.view.withdraw_window()
+        self.tray_service.create_tray_icon()
 
-    def show_window_from_tray():
-        view.deiconify_window()
-        tray_service.hide_tray_icon()
+    def show_window_from_tray(self):
+        logging.info("Showing window from tray.")
+        self.view.deiconify_window()
+        self.tray_service.hide_tray_icon()
 
-    def exit_app_from_tray():
-        exit_application()
+    def exit_app_from_tray(self):
+        logging.info("Exiting the application from tray.")
+        self.exit_application()
 
-    def exit_application():
-        if view.window:
-            view.window.quit()
-            view.window.destroy()
-        tray_service.destroy_tray_icon()
+    def exit_application(self):
+        logging.info("Finalizing the application.")
+        self.tray_service.destroy_tray_icon()
+        self.powershell_service.stop_powershell()
+        self.root.quit()
+        self.root.destroy()
 
-    def open_settings():
-        settings_controller = SettingsController(view.window, config_manager)
-        view.window.wait_window(settings_controller.view.window)
-        updated_language = config_manager.config.get("Language", "EN")
-        updated_lang_strings = config_manager.load_language_strings(updated_language)
-        view.lang_strings = updated_lang_strings
-        view.update_language()
-        tray_service.update_tray_icon(lang_strings=updated_lang_strings)
+    def open_settings(self):
+        settings_controller = SettingsController(self.view.window, self.config_manager)
+        self.view.window.wait_window(settings_controller.view.window)
+        updated_language = self.config_manager.config.get("Language", "EN")
+        updated_lang_strings = self.config_manager.load_language_strings(updated_language)
+        self.lang_strings = updated_lang_strings
+        self.schedule = self.config.get("Schedule", {})
+        self.view.update_language(self.lang_strings, self.schedule)
+        self.tray_service.update_tray_icon(lang_strings=self.lang_strings)
+        logging.info("Language and settings updated.")
 
-    tray_service = TrayService(
-        show_window_callback=show_window_from_tray,
-        exit_app_callback=exit_app_from_tray,
-        lang_strings=lang_strings
-    )
+    def convert_to_12_hour_format(self, hour_24):
+        # Convert 24-hour format to 12-hour format.
+        try:
+            hour = int(hour_24)
+        except (ValueError, TypeError):
+            logging.error(f"Invalid hour value for conversion: {hour_24}")
+            return "", ""
 
-    view.apply_button.bind("<Button-1>", lambda event: apply_settings())
-    view.minimize_button.bind("<Button-1>", lambda event: minimize_to_tray())
-    view.close_button.bind("<Button-1>", lambda event: exit_app_from_tray())
-    view.settings_button.bind("<Button-1>", lambda event: open_settings())
-
-    tray_service.create_tray_icon()
-
-    view.window.protocol("WM_DELETE_WINDOW", exit_app_from_tray)
-    view.mainloop()
+        if hour == 0:
+            return 12, 'AM'
+        elif 1 <= hour < 12:
+            return hour, 'AM'
+        elif hour == 12:
+            return 12, 'PM'
+        elif 13 <= hour < 24:
+            return hour - 12, 'PM'
+        else:
+            logging.error(f"Hour value out of range for conversion: {hour}")
+            return hour, 'AM'

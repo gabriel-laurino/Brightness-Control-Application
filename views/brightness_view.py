@@ -1,25 +1,24 @@
-import tkinter as tk
-from views.view_helper import ViewHelper
-from model.data_model import ConfigManager
+# views/brightness_view.py
 
-config_manager = ConfigManager()
+from views.view_helper import ViewHelper
 
 class BrightnessView:
-    def __init__(self, lang_strings, window):
-        self.window = window
+    def __init__(self, lang_strings, root, controller):
+        self.window = root
         self.helper = ViewHelper(self.window)
         self.entries = {}
         self.success_label = None
         self.lang_strings = lang_strings
+        self.controller = controller
         self.widgets_to_update = {}
 
-        # Set up the window
+        # Setup the window
         self.helper.setup_window(width=320, height=300, bg_color="#2E2E2E")
 
-    def create_widgets(self, brightness_levels):
+    def create_widgets(self, brightness_levels, schedule):
         self.create_title()
         self.create_separator()
-        self.create_brightness_inputs(brightness_levels)
+        self.create_brightness_inputs(brightness_levels, schedule)
         self.create_buttons()
 
     def create_title(self):
@@ -38,11 +37,7 @@ class BrightnessView:
         # Create a separator
         self.helper.create_separator(x=20, y=50, width=280, height=2, bg="#444444")
 
-    def create_brightness_inputs(self, brightness_levels):
-        # Load the current configuration to get time schedules
-        config = config_manager.load_config()
-        schedule = config.get("Schedule", {})
-
+    def create_brightness_inputs(self, brightness_levels, schedule):
         # Define brightness periods with time schedules
         periods = [
             {
@@ -89,9 +84,9 @@ class BrightnessView:
         end_time = schedule.get(period["end_key"], "")
 
         if self.lang_strings.get("Language", "EN") == "EN":
-            # Convert to 12-hour format with AM/PM
-            start_hour_12, start_ampm = self.convert_to_12_hour_format(start_time)
-            end_hour_12, end_ampm = self.convert_to_12_hour_format(end_time)
+            # Convert to 12-hour format with AM/PM using controller's method
+            start_hour_12, start_ampm = self.controller.convert_to_12_hour_format(start_time)
+            end_hour_12, end_ampm = self.controller.convert_to_12_hour_format(end_time)
 
             if start_hour_12 and end_hour_12:
                 label_text = f"{period_name} ({start_hour_12} {start_ampm} - {end_hour_12} {end_ampm}):"
@@ -101,7 +96,7 @@ class BrightnessView:
             # Keep in 24-hour format
             label_text = f"{period_name} ({start_time}h - {end_time}h):"
 
-        # Create label and input for brightness level
+        # Create label and entry for brightness level
         label_widget = self.helper.create_label(
             text=label_text,
             x=40,
@@ -122,7 +117,8 @@ class BrightnessView:
     def create_buttons(self):
         # Create Apply button
         self.apply_button = self.helper.create_apply_button(
-            text=self.lang_strings.get("MSG_08", "Apply")
+            text=self.lang_strings.get("MSG_08", "Apply"),
+            command=self.controller.apply_settings
         )
         self.apply_button.place(x=100, y=230)
         self.widgets_to_update['apply_button'] = self.apply_button
@@ -134,7 +130,8 @@ class BrightnessView:
             height=25,
             bg_color="#555555",
             fg_color="white",
-            font=("Segoe UI", 12, "bold")
+            font=("Segoe UI", 12, "bold"),
+            command=self.controller.minimize_to_tray
         )
         self.minimize_button.place(x=250, y=10)
         self.widgets_to_update['minimize_button'] = self.minimize_button
@@ -146,7 +143,8 @@ class BrightnessView:
             height=25,
             bg_color="#555555",
             fg_color="white",
-            font=("Segoe UI", 12, "bold")
+            font=("Segoe UI", 12, "bold"),
+            command=self.controller.exit_application
         )
         self.close_button.place(x=285, y=10)
         self.widgets_to_update['close_button'] = self.close_button
@@ -158,23 +156,22 @@ class BrightnessView:
             height=25,
             bg_color="#555555",
             fg_color="white",
-            font=("Segoe UI", 12)
+            font=("Segoe UI", 12),
+            command=self.controller.open_settings
         )
         self.settings_button.place(x=215, y=10)
         self.widgets_to_update['settings_button'] = self.settings_button
 
-    def update_language(self):
-        # Load updated language strings
-        config = config_manager.load_config()
-        self.lang_strings = ConfigManager().load_language_strings(config.get("Language", "EN"))
+    def update_language(self, lang_strings, schedule):
+        # Update language strings
+        self.lang_strings = lang_strings
 
         # Update title label
         self.widgets_to_update['title_label'].config(
             text=self.lang_strings.get("MSG_04", "Brightness Settings")
         )
 
-        # Update brightness level labels
-        schedule = config.get("Schedule", {})
+        # Define brightness periods again
         periods = [
             {
                 "key": "B1",
@@ -212,9 +209,9 @@ class BrightnessView:
             end_time = schedule.get(period["end_key"], "")
 
             if self.lang_strings.get("Language", "EN") == "EN":
-                # Convert to 12-hour format
-                start_hour_12, start_ampm = self.convert_to_12_hour_format(start_time)
-                end_hour_12, end_ampm = self.convert_to_12_hour_format(end_time)
+                # Convert to 12-hour format using controller's method
+                start_hour_12, start_ampm = self.controller.convert_to_12_hour_format(start_time)
+                end_hour_12, end_ampm = self.controller.convert_to_12_hour_format(end_time)
 
                 if start_hour_12 and end_hour_12:
                     label_text = f"{period_name} ({start_hour_12} {start_ampm} - {end_hour_12} {end_ampm}):"
@@ -224,16 +221,16 @@ class BrightnessView:
                 # Keep in 24-hour format
                 label_text = f"{period_name} ({start_time}h - {end_time}h):"
 
-            self.widgets_to_update[f'label_{period["key"]}'].config(text=label_text)
+            # Update label text
+            label = self.widgets_to_update.get(f'label_{period["key"]}')
+            if label:
+                label.config(text=label_text)
 
         # Update Apply button text
-        try:
-            self.apply_button.itemconfig(self.apply_button.text_id, text=self.lang_strings.get("MSG_08", "Apply"))
-        except AttributeError:
-            self.apply_button.config(text=self.lang_strings.get("MSG_08", "Apply"))
+        self.apply_button.itemconfig(self.apply_button.text_id, text=self.lang_strings.get("MSG_08", "Apply"))
 
     def show_success_message(self):
-        # Show success message for saving settings
+        # Show success message
         if self.success_label:
             self.success_label.destroy()
 
@@ -249,31 +246,13 @@ class BrightnessView:
         self.window.after(3000, self.success_label.destroy)
 
     def withdraw_window(self):
+        # Hide the window
         self.window.withdraw()
 
     def deiconify_window(self):
+        # Show the window
         self.window.deiconify()
 
     def mainloop(self):
+        # Start the main loop
         self.window.mainloop()
-
-    def convert_to_12_hour_format(self, hour_24):
-        # Convert 24-hour format to 12-hour format
-        if hour_24 is None:
-            return "", ""
-        
-        try:
-            hour = int(hour_24)
-        except (ValueError, TypeError):
-            return "", ""
-
-        if hour == 0:
-            return 12, 'AM'
-        elif 1 <= hour < 12:
-            return hour, 'AM'
-        elif hour == 12:
-            return 12, 'PM'
-        elif 13 <= hour < 24:
-            return hour - 12, 'PM'
-        else:
-            return hour, 'AM'

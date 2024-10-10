@@ -15,10 +15,11 @@ The project is structured following the **MVC (Model-View-Controller)** pattern,
 - **Pillow**: For handling images used in the tray icon.
 - **JSON**: For storing and managing language strings and configurations.
 - **PowerShell**: For executing brightness adjustments on the system through automation scripts.
+- **Portable Python**: Bundled with all necessary dependencies, eliminating the need for separate installations.
 
 ### Features:
 
-- **SDR Brightness Control**: Adjusts SDR brightness levels on HDR-enabled displays in Windows 11 (and likely Windows 10, though untested).
+- **SDR Brightness Control**: Adjusts SDR brightness levels on HDR-enabled displays in Windows 11.
 - **Multilingual Support**: English and Portuguese are supported, with language configuration stored in a single `lang.json` file.
 - **System Tray Integration**: Provides quick access to main functionalities via the system tray icon.
 - **Configuration Management**: Stores user preferences, such as brightness levels and time-based adjustments, persistently.
@@ -34,9 +35,9 @@ The project is structured following the **MVC (Model-View-Controller)** pattern,
 │   ├── adjust_brightness.ps1       # PowerShell script to automate brightness changes based on time
 │   └── brightness_controller.py    # Main controller managing brightness logic and interaction with the view
 ├── model
-│   ├── data_model.py               # Manages loading and saving data configurations (config.json)
-│   └── interface_model.py          # Manages loading and saving interface-related configurations
+│   └── data_model.py               # Manages loading and saving data configurations (config.json)
 ├── services
+│   ├── powershell_service.py       # Service for managing the Shell script
 │   └── tray_service.py             # Service for managing the system tray icon
 ├── views
 │   ├── brightness_view.py          # Main graphical interface for brightness control
@@ -47,6 +48,7 @@ The project is structured following the **MVC (Model-View-Controller)** pattern,
 │   └── lang.json                   # Language strings for English and Portuguese
 ├── main
 │   └── main.py                     # Entry point of the application
+├── python                          # Folder with all necessary dependencies to run the application (Portable Python)
 ├── README.md                       # Project documentation (this file)
 ├── LICENSE                         # Project license file (MIT)
 ├── Run.vbs                         # VBScript to completely launch the application
@@ -64,42 +66,6 @@ The project is structured following the **MVC (Model-View-Controller)** pattern,
 - **config.json**: Stores user settings such as brightness levels, time-based schedules, and the selected language.
 - **lang.json**: Contains translations for supported languages (English and Portuguese).
 
-## Prerequisites
-
-Ensure you have the following tools installed on your machine:
-
-- **Python 3.10+**
-- **Pip** (Python package manager)
-- **Windows 11** (The application adjusts SDR brightness on HDR-enabled displays)
-
-## Installation
-
-1. **Clone the Repository:**
-
-   ```bash
-   git clone https://github.com/your-username/brightness-control-app.git
-   cd brightness-control-app
-   ```
-
-2. **Install Dependencies:**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-### Required Packages:
-
-- `pystray`
-- `Pillow`
-
-## Language Management
-
-Language strings are managed in a single `lang.json` file located in the `data/` directory. The structure includes translations for both English (`EN`) and Portuguese (`PT`).
-
-To change the language:
-1. Edit the `config.json` file, updating the `Language` key to either `"EN"` or `"PT"`.
-2. The application will apply the selected language when restarted or when switching in the settings interface.
-
 ## Usage
 
 ### Step 1: Run the Application
@@ -114,7 +80,7 @@ Alternatively, you can use the `Run.vbs` file to start the application without o
 
 ### Step 2: Adjust Brightness Levels
 
-- **ADVICE**: Please use values ​​between 0 and 100, I forgot to implement a validation to limit the numbers to a maximum of 100 and this can make your screen VERY bright.
+- **ADVICE**: Please use values between 0 and 100. Currently, there is no validation to limit the numbers to a maximum of 100, which can make your screen VERY bright.
 
 - **Main Interface**: Allows adjusting SDR brightness levels for different times of the day (Morning, Afternoon, Evening, Night).
 - **Buttons**:
@@ -160,6 +126,3 @@ Feel free to fork this project and submit pull requests for improvements or new 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
-
-```plaintext

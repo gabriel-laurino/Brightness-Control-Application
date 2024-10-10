@@ -12,8 +12,8 @@
         "AfternoonStart": 11,
         "AfternoonEnd": 17,
         "EveningStart": 17,
-        "EveningEnd": 23,
-        "NightStart": 23,
+        "EveningEnd": 22,
+        "NightStart": 22,
         "NightEnd": 6
     }
 }
