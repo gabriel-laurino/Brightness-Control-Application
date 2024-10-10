@@ -70,15 +70,9 @@ The project is structured following the **MVC (Model-View-Controller)** pattern,
 
 ## Usage
 
-### Step 1: Run the Application
+### Step 1: Download the latest Release and run the Application
 
-Execute the main script to start the application:
-
-```bash
-python main/main.py
-```
-
-Alternatively, you can use the `Run.vbs` file to start the application without opening the terminal.
+Double click the `Run.vbs` file to start the application.
 
 ### Step 2: Adjust Brightness Levels
 
@@ -107,6 +101,10 @@ To automate brightness changes based on time:
 1. Open the **Settings** window via the settings button (⚙).
 2. Select either English or Portuguese from the available options.
 3. Changes will be automatically applied to the interface and the tray menu.
+
+### For Devs: 
+
+## If you prefer to just clone the repository and not download the Release, the python folder will not be present in your project, so you will need python 3.12 installed and the necessary dependencies.
 
 ## Configuration Management
 
