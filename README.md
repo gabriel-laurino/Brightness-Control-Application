@@ -104,7 +104,7 @@ To automate brightness changes based on time:
 
 ### For Devs: 
 
-## If you prefer to just clone the repository and not download the Release, the python folder will not be present in your project, so you will need python 3.12 installed and the necessary dependencies.
+If you prefer to just clone the repository and not download the Release, the python folder will not be present in your project, so you will need python 3.12 installed and the necessary dependencies.
 
 ## Configuration Management
 
