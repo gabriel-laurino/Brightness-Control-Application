@@ -6,7 +6,9 @@ This application allows users to manage SDR brightness levels on HDR-enabled scr
 
 ## Project Overview
 
-The project is structured following the **MVC (Model-View-Controller)** pattern, ensuring a clear separation of concerns and facilitating maintenance and scalability.
+The project is structured following the **MVC (Model-View-Controller)** pattern, ensuring a clear separation of concerns and facilitating maintenance and scalability;
+
+**The project is in Alpha and is still in the development process, many things could be wrong, especially in the division of class tasks and code organization.**
 
 ### Technologies Used:
 
@@ -125,4 +127,8 @@ Feel free to fork this project and submit pull requests for improvements or new 
 
 ## License
 
+<<<<<<< HEAD
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+=======
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+>>>>>>> b35fd3f0c7463b9b5a401659957c89cdfbf4180d
