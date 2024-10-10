@@ -125,8 +125,4 @@ Feel free to fork this project and submit pull requests for improvements or new 
 
 ## License
 
-<<<<<<< HEAD
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-=======
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
->>>>>>> b35fd3f0c7463b9b5a401659957c89cdfbf4180d
