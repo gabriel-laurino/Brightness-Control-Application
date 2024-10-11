@@ -36,10 +36,12 @@ The project is structured following the **MVC (Model-View-Controller)** pattern,
 │   ├── settings_controller.py      # Manages settings logic and updates configurations
 │   ├── adjust_brightness.ps1       # PowerShell script to automate brightness changes based on time
 │   └── brightness_controller.py    # Main controller managing brightness logic and interaction with the view
+├── logs                            # Logs folder
 ├── model
 │   └── data_model.py               # Manages loading and saving data configurations (config.json)
 ├── services
 │   ├── powershell_service.py       # Service for managing the Shell script
+│   ├── log_service.py              # Service for managing the logging
 │   └── tray_service.py             # Service for managing the system tray icon
 ├── views
 │   ├── brightness_view.py          # Main graphical interface for brightness control
@@ -56,17 +58,6 @@ The project is structured following the **MVC (Model-View-Controller)** pattern,
 ├── Run.vbs                         # VBScript to completely launch the application
 └── requirements.txt                # List of project dependencies
 ```
-
-### Key Files:
-
-- **brightness_controller.py**: Controls the interaction between the GUI, services, and models.
-- **settings_controller.py**: Manages the logic behind adjusting settings (e.g., schedule, language) and updating configurations.
-- **adjust_brightness.ps1**: A PowerShell script that automatically adjusts brightness levels based on the defined schedule.
-- **tray_service.py**: Manages the system tray icon, including handling click events and context menus.
-- **brightness_view.py**: Defines and updates the graphical interface elements related to brightness control.
-- **view_helper.py**: Provides helper methods for creating consistent widgets across views.
-- **config.json**: Stores user settings such as brightness levels, time-based schedules, and the selected language.
-- **lang.json**: Contains translations for supported languages (English and Portuguese).
 
 ## Usage
 
