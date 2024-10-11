@@ -4,12 +4,11 @@ import os
 import json
 import logging
 
-
 class ConfigManager:
     def __init__(self):
         # Determine the project root directory based on the current working directory
         self.project_root = os.getcwd()
-
+        
         # Absolute paths for config.json and lang.json
         self.CONFIG_PATH = os.path.join(self.project_root, "data", "config.json")
         self.LANG_PATH = os.path.join(self.project_root, "data", "lang.json")
@@ -25,9 +24,7 @@ class ConfigManager:
                 logging.info(f"Loading configuration from {self.CONFIG_PATH}")
                 return json.load(config_file)
         except FileNotFoundError:
-            logging.warning(
-                f"Configuration file not found at {self.CONFIG_PATH}. Using default settings."
-            )
+            logging.warning(f"Configuration file not found at {self.CONFIG_PATH}. Using default settings.")
             # Return default settings if config.json is not found
             return {
                 "Language": self.DEFAULT_LANG,
@@ -40,8 +37,8 @@ class ConfigManager:
                     "EveningStart": 17,
                     "EveningEnd": 23,
                     "NightStart": 23,
-                    "NightEnd": 6,
-                },
+                    "NightEnd": 6
+                }
             }
 
     def save_config(self):
@@ -63,9 +60,7 @@ class ConfigManager:
                 lang_data = json.load(lang_file)
                 return lang_data.get(language_code, lang_data[self.DEFAULT_LANG])
         except FileNotFoundError:
-            logging.warning(
-                f"Language file not found at {self.LANG_PATH}. Using default English strings."
-            )
+            logging.warning(f"Language file not found at {self.LANG_PATH}. Using default English strings.")
             # Return default English strings if lang.json is missing
             return {
                 "MSG_01": "Brightness adjusted to",
@@ -80,7 +75,7 @@ class ConfigManager:
                 "MSG_10": "Success! Settings saved.",
                 "MSG_11": "Error: All values must be integers!",
                 "MSG_12": "Open",
-                "MSG_13": "Exit",
+                "MSG_13": "Exit"
             }
 
     def save_brightness_settings(self, new_brightness_levels):
