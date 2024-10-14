@@ -11,7 +11,7 @@ class LogService:
 
     # Log configuration parameters
     create_log_file = True
-    log_level = logging.INFO  # INFO | ERROR | WARNING | DEBUG | CRITICAL
+    log_level = logging.DEBUG  # INFO | ERROR | WARNING | DEBUG | CRITICAL
 
     def __init__(self, log_level=log_level, log_to_file=create_log_file):
         self.log_file_path = "running_app.log"
@@ -25,8 +25,8 @@ class LogService:
         if log_to_file:
             rotating_handler = RotatingFileHandler(
                 self.log_file_path,
-                maxBytes=5 * 1024 * 1024,  # 5MB max per log file
-                backupCount=5,  # Keep 5 backup logs
+                maxBytes=5 * 1024 * 1024,
+                backupCount=5,
             )
             handlers.append(rotating_handler)
 
@@ -75,7 +75,7 @@ class LogService:
                 root_logger.removeHandler(handler)
 
             # Wait briefly to ensure that the file is fully released
-            time.sleep(0.1)
+            time.sleep(0.5)
 
             # Check if the log file exists before renaming
             if os.path.exists(self.log_file_path):
@@ -91,7 +91,6 @@ class LogService:
                 new_log_filename = f"{timestamp}_app.log"
                 new_log_path = os.path.join(logs_dir, new_log_filename)
 
-                # Attempt to move the log file
                 shutil.move(self.log_file_path, new_log_path)
                 print(f"Log file saved as: {new_log_path}")
             else:

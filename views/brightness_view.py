@@ -1,4 +1,5 @@
 from views.view_helper import ViewHelper
+import tkinter as tk
 
 
 class BrightnessView:
@@ -275,14 +276,14 @@ class BrightnessView:
 
         self.window.after(3000, self.success_label.destroy)
 
+    def show_tooltip_alert(self, entry, message, alert_type="info"):
+        self.helper.create_tooltip_alert(entry, message, alert_type=alert_type)
+
     def withdraw_window(self):
-        # Hide the window
         self.window.withdraw()
 
     def deiconify_window(self):
-        # Show the window
         self.window.deiconify()
 
     def mainloop(self):
-        # Start the main loop
         self.window.mainloop()

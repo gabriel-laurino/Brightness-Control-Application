@@ -21,7 +21,9 @@
         "MSG_21": "Afternoon",
         "MSG_22": "Evening",
         "MSG_23": "Night",
-        "MSG_24": "Language:"
+        "MSG_24": "Language:",
+        "MSG_25": "Brightness level for {key} must be between 0 and 100.",
+        "MSG_26": "The defined times overlap or are in an invalid order."
     },
     "PT": {
         "Language": "PT",
@@ -45,6 +47,8 @@
         "MSG_21": "Tarde",
         "MSG_22": "Noite",
         "MSG_23": "Madrugada",
-        "MSG_24": "Idioma:"
+        "MSG_24": "Idioma:",
+        "MSG_25": "O nível de brilho para {key} deve estar entre 0 e 100.",
+        "MSG_26": "Os horários definidos se sobrepõem ou estão em uma ordem inválida."
     }
 }
