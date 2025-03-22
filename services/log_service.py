@@ -11,7 +11,7 @@ class LogService:
 
     # Log configuration parameters
     create_log_file = True
-    log_level = logging.DEBUG  # INFO | ERROR | WARNING | DEBUG | CRITICAL
+    log_level = logging.INFO  # INFO | ERROR | WARNING | DEBUG | CRITICAL
 
     def __init__(self, log_level=log_level, log_to_file=create_log_file):
         self.log_file_path = "running_app.log"
