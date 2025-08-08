@@ -2,8 +2,8 @@
     "Language": "PT",
     "BrightnessLevels": {
         "B1": 30,
-        "B2": 40,
-        "B3": 15,
+        "B2": 60,
+        "B3": 20,
         "B4": 10
     },
     "Schedule": {
