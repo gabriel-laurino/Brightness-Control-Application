@@ -19,7 +19,7 @@ from app.ui import MainWindow, icon
 
 
 def main(argv=None) -> int:
-    parser = argparse.ArgumentParser(description="Brightness Control Application v2.0")
+    parser = argparse.ArgumentParser(description="Brightness Control Application v2.0.1")
     parser.add_argument("--preview", action="store_true", help="Show the UI without starting the brightness worker or writing settings")
     parser.add_argument("--config", type=Path, help="Use an existing config.json (useful for safe previews)")
     args = parser.parse_args(argv)
@@ -34,7 +34,7 @@ def main(argv=None) -> int:
         handlers=[RotatingFileHandler(log_dir / "studio.log", maxBytes=2_000_000, backupCount=3, encoding="utf-8")],
     )
     app = QApplication(sys.argv[:1])
-    app.setApplicationName("Brightness Control Application v2.0")
+    app.setApplicationName("Brightness Control Application v2.0.1")
     app.setWindowIcon(icon())
     app.setQuitOnLastWindowClosed(False)
     server = None
@@ -71,7 +71,7 @@ def main(argv=None) -> int:
         try:
             window = MainWindow(ConfigStore(config_path), script, runner=runner, preview=args.preview)
         except Exception:
-            logging.exception("Could not initialize Brightness Control Application v2.0")
+            logging.exception("Could not initialize Brightness Control Application v2.0.1")
             raise
         if server is not None:
             def show_existing():

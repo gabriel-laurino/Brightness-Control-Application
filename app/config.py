@@ -14,6 +14,17 @@ START_KEYS = ("MorningStart", "AfternoonStart", "EveningStart", "NightStart")
 END_KEYS = ("MorningEnd", "AfternoonEnd", "EveningEnd", "NightEnd")
 
 
+def format_hour(hour: int, language: str, compact: bool = False) -> str:
+    """Display a stored 24-hour schedule value in the selected language."""
+    if not 0 <= hour <= 23:
+        raise ValueError("Hour must be 0..23.")
+    if language == "PT":
+        return f"{hour:02d}:00"
+    if language == "EN":
+        return f"{hour % 12 or 12}{'' if compact else ':00'} {'AM' if hour < 12 else 'PM'}"
+    raise ValueError("Language must be PT or EN.")
+
+
 @dataclass
 class BrightnessConfig:
     language: str
@@ -72,10 +83,10 @@ class BrightnessConfig:
                 return PERIODS[index]
         return "B4"  # Night wraps over midnight.
 
-    def time_range(self, key: str) -> str:
+    def time_range(self, key: str, compact: bool = False) -> str:
         index = PERIODS.index(key)
         end = self.starts[(index + 1) % 4]
-        return f"{self.starts[index]:02d}:00 — {end:02d}:00"
+        return f"{format_hour(self.starts[index], self.language, compact)} — {format_hour(end, self.language, compact)}"
 
 
 class ConfigStore:

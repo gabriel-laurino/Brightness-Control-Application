@@ -1,8 +1,10 @@
-# Brightness Control Application v2.0
+# Brightness Control Application v2.0.1
 
 A compact Windows tray app for scheduling the SDR-content brightness boost on HDR displays. The daily control remains a small, borderless popup: click the tray icon, adjust the four periods, and save. It does not occupy the Windows taskbar, and closing the popup silently returns it to the tray. **Ajustes / Settings** opens the detailed schedule, language, and display-status panel.
 
 The current version uses PySide6 for the interface and a separate PowerShell worker for display changes. The original Tkinter application and its `controller/adjust_brightness.ps1` are retained in the repository as the legacy version; the critical original script has not been modified.
+
+The schedule remains stored as 24-hour integers for compatibility. Portuguese displays 24-hour times; English shows 12-hour times with AM/PM in both the tray popup and schedule editor. Switching languages in the editor preserves the selected hours.
 
 ## Safety boundary
 

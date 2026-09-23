@@ -26,9 +26,9 @@ PALETTE = {
 
 TEXT = {
     "PT": {
-        "tagline": "APPLICATION  /  V2.0", "title": "A luz certa,\nna hora certa.",
+        "tagline": "APPLICATION  /  V2.0.1", "title": "A luz certa,\nna hora certa.",
         "subtitle": "Uma rotina de brilho para o conteúdo SDR dos seus monitores HDR. Clara, previsível e feita para acompanhar o seu dia.",
-        "live": "ROTINA ATIVA", "preview": "MODO DE PRÉVIA", "now": "AGORA",
+        "live": "●  ATIVO", "preview": "●  PRÉVIA", "error_badge": "●  ERRO", "now": "AGORA",
         "schedule": "Seu dia, em quatro momentos.", "schedule_sub": "Ajuste cada período. A mudança é aplicada aos HDR ativos após salvar.",
         "periods": ("Manhã", "Tarde", "Entardecer", "Noite"),
         "level": "BRILHO SDR", "active": "EM USO", "monitors": "Monitores",
@@ -45,9 +45,9 @@ TEXT = {
         "save_error": "Não foi possível salvar a configuração.", "night_hint": "O período noturno termina quando a manhã começa.",
     },
     "EN": {
-        "tagline": "APPLICATION  /  V2.0", "title": "The right light,\nat the right time.",
+        "tagline": "APPLICATION  /  V2.0.1", "title": "The right light,\nat the right time.",
         "subtitle": "A brightness routine for SDR content on your HDR displays. Clear, predictable and built around your day.",
-        "live": "ROUTINE ACTIVE", "preview": "PREVIEW MODE", "now": "RIGHT NOW",
+        "live": "●  ACTIVE", "preview": "●  PREVIEW", "error_badge": "●  ERROR", "now": "RIGHT NOW",
         "schedule": "Your day, in four moments.", "schedule_sub": "Tune each period. Active HDR displays update after you save.",
         "periods": ("Morning", "Afternoon", "Evening", "Night"),
         "level": "SDR BRIGHTNESS", "active": "ACTIVE", "monitors": "Displays",
@@ -73,7 +73,7 @@ QFrame#topbar, QFrame#detailHeader { background: transparent; border: 0; }
 QFrame#heroPanel { background: qlineargradient(x1:0,y1:0,x2:1,y2:1,stop:0 #173e49,stop:0.55 #11313c,stop:1 #183444); border: 1px solid #3b6970; border-radius: 17px; }
 QFrame#schedulePanel { background: #102835; border: 1px solid #294653; border-radius: 17px; }
 QFrame#separator { background: #24434d; border: 0; max-height: 1px; }
-QFrame#languagePicker { background: #102b37; border: 1px solid #365965; border-radius: 12px; }
+QFrame#languagePicker, QFrame#meridiemPicker { background: #102b37; border: 1px solid #365965; border-radius: 12px; }
 QLabel#brand { color: #f3fbfa; font-size: 13px; font-weight: 800; letter-spacing: 1px; }
 QLabel#brandSub { color: #7be1cb; font-size: 9px; font-weight: 800; letter-spacing: 1px; }
 QLabel#sectionTitle { color: #f0fbfc; font-size: 21px; font-weight: 750; }
@@ -98,6 +98,9 @@ QPushButton#closeButton:hover { color: white; background: #954657; }
 QPushButton#languageChoice { color: #a8c4c9; background: transparent; border: 0; border-radius: 9px; padding: 5px 12px; font-size: 11px; font-weight: 700; }
 QPushButton#languageChoice:hover:!checked { color: #effff8; background: #21414c; }
 QPushButton#languageChoice:checked { color: #092a34; background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #80e4e7,stop:1 #9cf2d5); }
+QPushButton#meridiemChoice { color: #a8c4c9; background: transparent; border: 0; border-radius: 8px; padding: 4px 6px; font-size: 10px; font-weight: 700; }
+QPushButton#meridiemChoice:hover:!checked { color: #effff8; background: #21414c; }
+QPushButton#meridiemChoice:checked { color: #092a34; background: #9cf2d5; }
 QPushButton#saveButton { color: #092c35; background: qlineargradient(x1:0,y1:0,x2:1,y2:0,stop:0 #79e2ea,stop:0.58 #89edcf,stop:1 #b0f5dc); border: 0; font-size: 12px; font-weight: 800; padding: 9px 15px; }
 QPushButton#saveButton:hover { background: #b2f7df; }
 QPushButton#saveButton:disabled { color: #a9c3c7; background: #25414a; }
@@ -218,7 +221,8 @@ class PeriodRow(QWidget):
         title = label(name, "cardTitle")
         top.addWidget(title)
         top.addSpacing(3)
-        top.addWidget(label(time_range, "cardTime"))
+        self.time_label = label(time_range, "cardTime")
+        top.addWidget(self.time_label)
         top.addStretch()
         self.value_label = label(f"{value}%", "compactValue")
         top.addWidget(self.value_label)
@@ -239,6 +243,70 @@ class PeriodRow(QWidget):
 
 class MonitorSignals(QObject):
     updated = Signal(object, object)
+
+
+class ScheduleHourInput(QWidget):
+    """Localized editor that always stores hours in the existing 0–23 format."""
+
+    def __init__(self, hour: int, language: str, name: str):
+        super().__init__()
+        row = QHBoxLayout(self)
+        row.setContentsMargins(0, 0, 0, 0)
+        row.setSpacing(5)
+        self.spin24 = QSpinBox()
+        self.spin24.setRange(0, 23)
+        self.spin24.setValue(hour)
+        self.spin24.setSuffix(":00")
+        self.spin24.setFixedWidth(77)
+        self.spin12 = QSpinBox()
+        self.spin12.setRange(1, 12)
+        self.spin12.setSuffix(":00")
+        self.spin12.setFixedWidth(51)
+        for spin in (self.spin24, self.spin12):
+            spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+            spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            spin.setAccessibleName(f"{name} start hour")
+        row.addWidget(self.spin24)
+        row.addWidget(self.spin12)
+        meridiem = QFrame()
+        meridiem.setObjectName("meridiemPicker")
+        meridiem_row = QHBoxLayout(meridiem)
+        meridiem_row.setContentsMargins(2, 2, 2, 2)
+        meridiem_row.setSpacing(1)
+        self.meridiem_group = QButtonGroup(self)
+        self.meridiem_group.setExclusive(True)
+        self.meridiem_buttons = {}
+        for period in ("AM", "PM"):
+            button = QPushButton(period)
+            button.setObjectName("meridiemChoice")
+            button.setCheckable(True)
+            button.setFixedSize(31, 25)
+            button.setCursor(Qt.CursorShape.PointingHandCursor)
+            button.setAccessibleName(f"{name} {period}")
+            self.meridiem_group.addButton(button)
+            self.meridiem_buttons[period] = button
+            meridiem_row.addWidget(button)
+        row.addWidget(meridiem)
+        self.meridiem = meridiem
+        self._language = "PT"
+        self.set_language(language)
+
+    def hour(self) -> int:
+        if self._language == "PT":
+            return self.spin24.value()
+        return self.spin12.value() % 12 + (12 if self.meridiem_buttons["PM"].isChecked() else 0)
+
+    def set_language(self, language: str) -> None:
+        if language not in ("PT", "EN"):
+            raise ValueError("Language must be PT or EN.")
+        hour = self.hour()
+        self.spin24.setValue(hour)
+        self.spin12.setValue(hour % 12 or 12)
+        self.meridiem_buttons["AM" if hour < 12 else "PM"].setChecked(True)
+        self._language = language
+        self.spin24.setVisible(language == "PT")
+        self.spin12.setVisible(language == "EN")
+        self.meridiem.setVisible(language == "EN")
 
 
 class SettingsDialog(QDialog):
@@ -274,23 +342,15 @@ class SettingsDialog(QDialog):
         layout.addWidget(header)
         self._drag_handle = header
         layout.addWidget(label(self.words["settings_sub"], "bodyMuted", True))
-        self.spins = []
+        self.hour_inputs = []
         for index, (name, value) in enumerate(zip(self.words["periods"], config.starts)):
             row = QHBoxLayout()
             row.addWidget(label(f"0{index + 1}  {name}", "cardTitle"))
             row.addStretch()
-            spin = QSpinBox()
-            spin.setRange(0, 23)
-            spin.setValue(value)
-            spin.setSuffix(":00")
-            spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
-            spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            spin.setFixedWidth(85)
-            spin.setToolTip("Digite a hora de início (0–23)" if config.language == "PT" else "Type the start hour (0–23)")
-            spin.setAccessibleName(f"{name} start time")
-            row.addWidget(spin)
+            hour_input = ScheduleHourInput(value, config.language, name)
+            row.addWidget(hour_input)
             layout.addLayout(row)
-            self.spins.append(spin)
+            self.hour_inputs.append(hour_input)
         layout.addWidget(label(self.words["night_hint"], "bodyMuted"))
         language_row = QHBoxLayout()
         language_row.addWidget(label(self.words["language"], "cardTitle"))
@@ -313,6 +373,7 @@ class SettingsDialog(QDialog):
             choice.setProperty("language", code)
             choice.setAccessibleName(f"{self.words['language']}: {caption}")
             choice.setChecked(code == config.language)
+            choice.clicked.connect(lambda _checked=False, selected=code: self._change_language(selected))
             self.language_group.addButton(choice)
             self.language_buttons[code] = choice
             picker_layout.addWidget(choice)
@@ -365,13 +426,17 @@ class SettingsDialog(QDialog):
         super().mouseReleaseEvent(event)
 
     def _validate(self) -> None:
-        starts = tuple(spin.value() for spin in self.spins)
+        starts = tuple(hour_input.hour() for hour_input in self.hour_inputs)
         if tuple(sorted(set(starts))) != starts:
             QMessageBox.warning(self, self.words["settings_title"], self.words["invalid"])
             return
         self.starts = starts
         self.language = self.language_group.checkedButton().property("language")
         self.accept()
+
+    def _change_language(self, language: str) -> None:
+        for hour_input in self.hour_inputs:
+            hour_input.set_language(language)
 
 
 class MainWindow(QMainWindow):
@@ -389,7 +454,7 @@ class MainWindow(QMainWindow):
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="monitor-probe")
         self.signals = MonitorSignals(self)
         self.signals.updated.connect(self._monitors_updated)
-        self.setWindowTitle("Brightness Control Application v2.0")
+        self.setWindowTitle("Brightness Control Application v2.0.1")
         self.setWindowIcon(icon())
         window_type = Qt.WindowType.Window if self.preview else Qt.WindowType.Tool
         self.setWindowFlags(window_type | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
@@ -445,7 +510,7 @@ class MainWindow(QMainWindow):
         top.addSpacing(5)
         top.addLayout(brand)
         top.addStretch()
-        self.top_badge = label("●  PRÉVIA" if self.preview else "●  ATIVO", "statusBadge")
+        self.top_badge = label(words["preview" if self.preview else "live"], "statusBadge")
         top.addWidget(self.top_badge)
         self.settings_button = QPushButton("Ajustes" if self.config.language == "PT" else "Settings")
         self.settings_button.setObjectName("subtleButton")
@@ -539,7 +604,7 @@ class MainWindow(QMainWindow):
         for card_key, card in self.cards.items():
             card.set_active(card_key == key)
         index = PERIODS.index(key)
-        self.current_period_label.setText(self.words["periods"][index] + "  ·  " + self.config.time_range(key))
+        self.current_period_label.setText(self.words["periods"][index] + "  ·  " + self.config.time_range(key, compact=True))
         self.current_value_label.setText(f"{self.levels[key]}%")
 
     def _level_changed(self, key: str, value: int) -> None:
@@ -624,7 +689,7 @@ class MainWindow(QMainWindow):
     def _worker_status(self, running: bool, detail: str) -> None:
         if self.preview:
             return
-        self.top_badge.setText("●  ATIVO" if running else "●  ERRO")
+        self.top_badge.setText(self.words["live" if running else "error_badge"])
         self.top_badge.setToolTip(self.words["worker_ok"] if running else self.words["worker_off"])
         if detail:
             self.top_badge.setToolTip(detail)

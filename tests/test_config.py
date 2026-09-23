@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from app.config import BrightnessConfig, ConfigStore
+from app.config import BrightnessConfig, ConfigStore, format_hour
 
 
 def sample():
@@ -21,6 +21,20 @@ def sample():
 
 
 class ConfigTests(unittest.TestCase):
+    def test_localized_hour_boundaries_and_ranges(self):
+        self.assertEqual(format_hour(0, "EN"), "12:00 AM")
+        self.assertEqual(format_hour(11, "EN"), "11:00 AM")
+        self.assertEqual(format_hour(12, "EN"), "12:00 PM")
+        self.assertEqual(format_hour(17, "EN"), "5:00 PM")
+        self.assertEqual(format_hour(23, "EN"), "11:00 PM")
+        self.assertEqual(format_hour(0, "PT"), "00:00")
+        config = BrightnessConfig.from_dict({**sample(), "Language": "EN"})
+        self.assertEqual(config.time_range("B1"), "6:00 AM — 11:00 AM")
+        self.assertEqual(config.time_range("B3"), "5:00 PM — 10:00 PM")
+        self.assertEqual(config.time_range("B3", compact=True), "5 PM — 10 PM")
+        self.assertEqual(config.time_range("B4"), "10:00 PM — 6:00 AM")
+        self.assertEqual(config.as_dict()["Schedule"]["EveningStart"], 17)
+
     def test_every_hour_has_one_expected_period(self):
         config = BrightnessConfig.from_dict(sample())
         periods = [config.current_period(hour) for hour in range(24)]
