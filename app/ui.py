@@ -451,6 +451,7 @@ class MainWindow(QMainWindow):
         self.monitors = []
         self.monitor_error = None
         self._exit_requested = False
+        self._tray_open_queued = False
         self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="monitor-probe")
         self.signals = MonitorSignals(self)
         self.signals.updated.connect(self._monitors_updated)
@@ -589,13 +590,11 @@ class MainWindow(QMainWindow):
         tray = QSystemTrayIcon(icon(), self)
         menu = QMenu(self)
         open_action = menu.addAction(self.words["open"])
-        open_action.triggered.connect(self._show_from_tray)
+        open_action.triggered.connect(self._queue_show_from_tray)
         exit_action = menu.addAction(self.words["exit"])
         exit_action.triggered.connect(self._quit)
         tray.setContextMenu(menu)
-        tray.activated.connect(lambda reason: self._show_from_tray()
-                               if reason in (QSystemTrayIcon.ActivationReason.Trigger,
-                                             QSystemTrayIcon.ActivationReason.DoubleClick) else None)
+        tray.activated.connect(self._on_tray_activated)
         tray.show()
         return tray
 
@@ -729,13 +728,39 @@ class MainWindow(QMainWindow):
         self._drag_origin = None
         super().mouseReleaseEvent(event)
 
+    def _on_tray_activated(self, reason) -> None:
+        if reason in (QSystemTrayIcon.ActivationReason.Trigger,
+                      QSystemTrayIcon.ActivationReason.DoubleClick):
+            self._queue_show_from_tray()
+
+    def _queue_show_from_tray(self) -> None:
+        if self._exit_requested or self._tray_open_queued:
+            return
+        # Leave the native tray/menu callback before moving or activating a window.
+        # Windows can emit Trigger and DoubleClick for the same interaction.
+        self._tray_open_queued = True
+        QTimer.singleShot(0, self._show_from_tray)
+
     def _show_from_tray(self) -> None:
-        self._place_near_tray()
-        self.showNormal()
-        self.raise_()
-        self.activateWindow()
+        self._tray_open_queued = False
+        if self._exit_requested:
+            return
+        logging.info("Opening popup from tray")
+        try:
+            self._place_near_tray()
+        except Exception:
+            logging.exception("Could not position popup; opening at its current position")
+        try:
+            self.showNormal()
+            self.raise_()
+            self.activateWindow()
+        except Exception:
+            logging.exception("Could not reopen popup from tray")
+        else:
+            logging.info("Popup opened from tray")
 
     def _quit(self) -> None:
+        logging.info("Exit requested from tray")
         self._exit_requested = True
         self.clock.stop()
         self.monitor_timer.stop()
@@ -748,6 +773,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event) -> None:  # noqa: N802 - Qt API
         if self.tray is not None and not self._exit_requested:
+            logging.info("Popup hidden to tray")
             event.ignore()
             self.hide()
         else:
