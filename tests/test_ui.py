@@ -8,7 +8,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import QRect, Qt  # noqa: E402
 from PySide6.QtGui import QCloseEvent  # noqa: E402
-from PySide6.QtWidgets import QApplication  # noqa: E402
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon  # noqa: E402
 
 from app.config import BrightnessConfig, ConfigStore  # noqa: E402
 from app.ui import MainWindow, ScheduleHourInput, SettingsDialog  # noqa: E402
@@ -40,6 +40,39 @@ class UiTests(unittest.TestCase):
             self.assertFalse(event.isAccepted())
             self.assertTrue(window.isHidden())
         finally:
+            window.clock.stop()
+            window.monitor_timer.stop()
+            window.executor.shutdown(wait=False, cancel_futures=True)
+
+    def test_tray_clicks_queue_one_reopen_after_callback(self):
+        config = Path(__file__).resolve().parents[1] / "data" / "config.json"
+        with patch.object(MainWindow, "_create_tray", return_value=QuietTray()), \
+             patch.object(MainWindow, "_refresh_monitors"):
+            window = MainWindow(ConfigStore(config), Path("unused.ps1"), runner=None)
+        try:
+            with patch.object(window, "_show_from_tray") as reopen:
+                window._on_tray_activated(QSystemTrayIcon.ActivationReason.Trigger)
+                window._on_tray_activated(QSystemTrayIcon.ActivationReason.DoubleClick)
+                self.assertEqual(reopen.call_count, 0)
+                self.app.processEvents()
+                reopen.assert_called_once_with()
+        finally:
+            window.clock.stop()
+            window.monitor_timer.stop()
+            window.executor.shutdown(wait=False, cancel_futures=True)
+
+    def test_placement_failure_does_not_prevent_reopening(self):
+        config = Path(__file__).resolve().parents[1] / "data" / "config.json"
+        with patch.object(MainWindow, "_create_tray", return_value=QuietTray()), \
+             patch.object(MainWindow, "_refresh_monitors"):
+            window = MainWindow(ConfigStore(config), Path("unused.ps1"), runner=None)
+        try:
+            with patch.object(window, "_place_near_tray", side_effect=OSError("probe unavailable")), \
+                 patch("app.ui.logging.exception"):
+                window._show_from_tray()
+            self.assertTrue(window.isVisible())
+        finally:
+            window.hide()
             window.clock.stop()
             window.monitor_timer.stop()
             window.executor.shutdown(wait=False, cancel_futures=True)
